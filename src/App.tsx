@@ -8,7 +8,7 @@ import { TipButton } from './components/TipButton';
 import { KeyBindDialog } from './components/KeyBindDialog';
 import { useKeyBindings } from './contexts/KeyBindingsContext';
 import { useSound } from './hooks/useSound';
-import type { DrumHit, KeyCount } from './types';
+import type { DrumHit, KeyCount, KeySpeed } from './types';
 
 function App() {
   const { bindings } = useKeyBindings();
@@ -20,6 +20,8 @@ function App() {
     3: [], // Right Ka track
   });
   const [keyCounts, setKeyCounts] = useState<KeyCount>({});
+  const [keySpeed, setKeySpeed] = useState<KeySpeed>({current:0, max:0});
+  const [firstHitTime, setFirstHitTime] = useState<number>(-1);
   const [lastHitTime, setLastHitTime] = useState<number>(Date.now());
   const [volume, setVolume] = useState(0.5);
   const { playSound } = useSound(volume);
@@ -34,6 +36,8 @@ function App() {
   }, [bindings]);
 
   const resetCounters = useCallback(() => {
+    setFirstHitTime(-1);
+    setKeySpeed({current: 0, max: 0});
     setKeyCounts(Object.values(bindings).reduce((acc, key) => ({
       ...acc,
       [key]: 0
@@ -63,8 +67,16 @@ function App() {
       const newKeys = new Set(activeKeys);
       newKeys.add(key);
       setActiveKeys(newKeys);
+      if (firstHitTime == -1) setFirstHitTime(Date.now());
       setLastHitTime(Date.now());
       setTotalHits(prev => prev + 1);
+      setKeySpeed(prev => {
+        const speed = totalHits * 1000 / (lastHitTime - firstHitTime);
+        return {
+          current: speed,
+          max: totalHits > 30 ? (prev.max < speed ? speed : prev.max) : prev.max,
+        }
+      });
 
       const bindingEntry = Object.entries(bindings).find(([_, k]) => k === key);
       if (!bindingEntry) return;
@@ -136,7 +148,7 @@ function App() {
         </div>
 
         <div className="bg-gray-800/50 rounded-xl p-8 backdrop-blur-sm shadow-xl">
-          <KeyCounter counts={keyCounts} lastHitTime={lastHitTime} bindings={bindings} />
+          <KeyCounter counts={keyCounts} speed={keySpeed} lastHitTime={lastHitTime} bindings={bindings} />
 
           <div className="grid grid-cols-4 gap-8 mb-12">
             {Object.entries(bindings).map(([type, key]) => (

@@ -10,6 +10,11 @@ export interface KeyCount {
   [key: string]: number;
 }
 
+export interface KeySpeed {
+  current: number;
+  max: number;
+}
+
 export interface KeyBindings {
   'ka-left': string;
   'don-left': string;
