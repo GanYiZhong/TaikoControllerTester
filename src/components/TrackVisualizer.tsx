@@ -41,7 +41,7 @@ export function TrackVisualizer({ trackHits, totalHits, bindings }: TrackVisuali
   return (
     <div ref={containerRef} className="bg-gray-900/50 rounded-lg p-6 w-full overflow-hidden">
       <h2 className="text-xl font-semibold mb-6">Visual Timeline</h2>
-      <div className="grid grid-rows-4 gap-4">
+      <div className="grid grid-rows-4 gap-2">
         {Object.entries(bindings).map(([type, key], trackIndex) => (
           <div key={trackIndex} className="flex items-center gap-4">
             <div className="w-8 shrink-0 text-center text-gray-500">
